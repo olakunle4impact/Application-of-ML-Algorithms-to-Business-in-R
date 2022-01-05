@@ -1,0 +1,101 @@
+install.packages('caret')
+install.packages('caret', dependencies=c('Depends', 'Suggests'))
+install.packages('caTools')
+library(caTools)
+library(caret)
+#load the dataset to your environment 
+data(iris)
+#rename the dataset
+oluseyi <- iris
+oluseyi
+#load from csv
+Filename <-iris.csv
+#load from your local directory 
+oluseyi <- read.csv(filename, header=FALSE)
+#set the column names in the dataset
+
+colnames(oluseyi) <- c('Sepal.Length', 'Sepal.Width','Petal.Length', 'Petal.Width','Species')
+oluseyi
+#create a list of 75% of the rows in the original dataset we can use for training our model
+validation_index <- sample.split(oluseyi, SplitRatio =0.75)
+validation_index
+#select 25% of the data for validation
+validation <- oluseyi[-validation_index,]
+#dimension of the dataset
+dim(oluseyi)
+#list type of each attribute
+sapply(oluseyi, class)
+#take a peek at the first 5 rows of the dataset 
+head(oluseyi)
+tail(oluseyi)
+#list the level for the class
+levels(oluseyi$Species)
+#summarize the class distribution
+percentage <- prop.table(table(oluseyi$Species)) *100
+cbind(freq=table(oluseyi$Species), percentage=percentage)
+#summarize the attribute distributions
+summary(oluseyi)
+
+#split input and output
+X <- oluseyi[,1:4]
+X
+Y <- oluseyi[,5]
+Y
+install.packages('ggplot2')
+library(ggplot2)
+#boxplot for each attribute on one image
+
+Par(mfrow=c(1,4))
+for(I in 1:4) {
+  boxplot(x[,i], main=names(iris)[i])
+}
+plot(y)
+
+
+#scatterplot matrix
+
+featurePlot(x=x, y=y, plot='ellipse')
+#box and whisker plots for each attribute
+featurePlot(x=x, y=y, plot='box')
+#density plots for each attribute by class value
+Scales <-list(x=list(relation='free'), y=list(relation='free'))
+featurePlot(x=x, y=y, plot='density', scales=scales)
+
+control <- trainControl(method='cv', number=10)
+Metric <-'Accuracy'
+
+
+#linear algorithms 
+set.seed(8)
+fit.lda <- train(Species~., data=oluseyi, method='lda', metric=metric, trControl=control)
+#CART	
+set.seed(8)
+fit.cart <- train(Species~., data=oluseyi, method='rpart', metric=metric, trControl=control)
+#KNN
+set.seed(8)
+fit.knn <- train(Species~., data=oluseyi, method= 'knn', metric=metric, trControl=control)
+#SVM
+set.seed(8)
+fit.svm <- train(Species~., data=oluseyi, method= 'svmRadial', metric=metric, trControl=control)
+#Random Forest
+set.seed(8)
+fit.rf <- train(Species~., data=oluseyi, method= 'rf', metric=metric, trControl=control)
+
+#summarize accuracy of all models
+results <- resamples(list(lda=fit.lda, cart=fit.cart, knn=fit.knn, svm=fit.svm, rf=fit.rf))
+summary(results)
+results
+#compare accuracy of models
+dotplot(results)
+#summarize the best model
+print(fit.lda)
+
+#estimate skill of LDA on the validation dataset
+predictions <- predict(fit.lda, validation)
+
+predictions
+
+confusionMatrix(predictions, validation$Species)
+
+ 
+
